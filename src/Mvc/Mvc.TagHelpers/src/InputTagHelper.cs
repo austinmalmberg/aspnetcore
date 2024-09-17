@@ -18,6 +18,8 @@ public class InputTagHelper : TagHelper
     private const string ForAttributeName = "asp-for";
     private const string FormatAttributeName = "asp-format";
 
+    public readonly HashSet<string> SupportedRangeTypes = [ "date", "month", "week", "time", "datetime-local", "number", "range" ];
+
     // Mapping from datatype names and data annotation hints to values for the <input/> element's "type" attribute.
     private static readonly Dictionary<string, string> _defaultInputTypes =
         new(StringComparer.OrdinalIgnoreCase)
@@ -217,6 +219,16 @@ public class InputTagHelper : TagHelper
                 {
                     { "name", Name },
                 };
+        }
+
+        if (SupportedRangeTypes.Contains(inputType))
+        {
+            RangeAttribute? rangeAttribute = For.Metadata?.ValidatorMetadata.OfType<RangeAttribute>().FirstOrDefault();
+            if (rangeAttribute != null)
+            {
+                if (rangeAttribute.Minimum != null) htmlAttributes["min"] = rangeAttribute.Minimum;
+                if (rangeAttribute.Maximum != null) htmlAttributes["max"] = rangeAttribute.Maximum;
+            }
         }
 
         TagBuilder tagBuilder;
